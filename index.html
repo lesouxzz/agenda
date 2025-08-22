@@ -1,71 +1,81 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agenda</title>
+    <link rel="stylesheet" href="estilo.css">
 </head>
+
 <body>
-    <h2>Lista de Afazeres</h2>
-    <input id= "tarefa" type="text" placeholder="Insira aqui sua tarefa"></input>
-    <input id="seleciona-data" type="date" placeholder="Escolha a data"/>
+    <h1>Lista de Tarefas</h1>
+    <input id="tarefa" type="text" placeholder="Insira aqui sua tarefa"></input>
+    <input id="seleciona-data" type="date" />
     <button onclick="adicionarTarefa()">Adicionar Tarefa</button>
     <div id="lista-de-tarefas"></div>
+
     <script>
-        let afazeres = [
-            {
-                nome: "Lavar louça",
-                data: "15/08/2025",
-                id: "id1"
-            },
-            {
-                nome: "Lavar banheiro",
-                data: "20/08/2025",
-                id: "id2"
-            },
-            {
-                nome: "Estender roupa",
-                data: "25/05/2025",
-                id: "id3"
-            },
-            {
-                nome: "Assistir jogo do Corinthians",
-                data: "16/08/2025",
-                id: "id4"
-            }
-        ];
+        let afazeres;
+        const afazeresSalvos = JSON.parse(localStorage.getItem("afazeres"));
+        if (Array.isArray(afazeresSalvos)) {
+            afazeres = afazeresSalvos;
+        } else {
+            afazeres = [
+                { nome: "Lavar louça", data: "15-08-2025", id: "id1" },
+                { nome: "Lavar banheiro", data: "20-08-2025", id: "id2" },
+                { nome: "Estender roupa", data: "25-08-2025", id: "id3" },
+                { nome: "Assistir jogo do São Paulo", data: "16-08-2025", id: "id4" }
+            ];
+        }
+
+        let salvarTarefas = () => localStorage.setItem("afazeres", JSON.stringify(afazeres));
+
+        salvarTarefas();
 
         let adicionarTarefa = () => {
             const campoTarefa = document.getElementById("tarefa");
             const tarefa = campoTarefa.value;
-
             const campoData = document.getElementById("seleciona-data");
             const prazo = campoData.value;
-
             const cron = "" + new Date().getTime();
 
-            afazeres.push(
-                {
-                    nome: tarefa,
-                    data: prazo,
-                    id: cron
-                }
-            )
+            afazeres.push({ nome: tarefa, data: prazo, id: cron });
+
+            salvarTarefas();
             renderizar();
         }
 
-        let renderizar = () => {
-            afazeres.forEach(
-                (tarefa) => {
-                    const elemento = document.createElement("div");
-                    elemento.innerHTML = tarefa.nome + " " + tarefa.data;
-        
-                    const listaDeTarefas = document.getElementById("lista-de-tarefas");
-                    listaDeTarefas.appendChild( elemento );
-                }
-            );
-        }
-        renderizar();
+        let apagarTarefa = (evento) => {
+            const botaoApagar = evento.target;
+            const idASerApagado = botaoApagar.id;
+            afazeres = afazeres.filter((tarefa) => tarefa.id !== idASerApagado);
+            salvarTarefas();
+            renderizar();
+        };
 
-        //document.getElementById("lista-de-tarefas").innerHTML = afazeres;
+        let renderizar = () => {
+            document.getElementById("lista-de-tarefas").innerHTML = "";
+            afazeres.forEach((tarefa) => {
+                const elemento = document.createElement("div");
+               const [ano, mes, dia] = tarefa.data.split("-");
+              const dataFormatada = `${dia}/${mes}/${ano}`;
+              elemento.innerHTML = tarefa.nome + " - " + dataFormatada;
+
+                const botaoApagar = document.createElement("button");
+                botaoApagar.innerText = "Apagar"
+                botaoApagar.style = "margin-left: 12px;"
+                botaoApagar.id = tarefa.id;
+                botaoApagar.onclick = apagarTarefa;
+                elemento.appendChild(botaoApagar);
+
+                const listaDeTarefas = document.getElementById("lista-de-tarefas");
+                listaDeTarefas.appendChild(elemento);
+            });
+        }
+
+        renderizar();
     </script>
+</body>
+
+</html>
